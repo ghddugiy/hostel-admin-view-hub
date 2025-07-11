@@ -88,7 +88,7 @@ const MessManagement = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {Object.entries(menuSchedule[Object.keys(menuSchedule)[new Date().getDay() - 1] || 'Monday']).map(([meal, items]) => (
+                {Object.entries(menuSchedule[Object.keys(menuSchedule)[new Date().getDay() - 1] as keyof typeof menuSchedule] || menuSchedule.Monday).map(([meal, items]) => (
                   <div key={meal}>
                     <h4 className="font-medium capitalize mb-1">{meal}</h4>
                     <p className="text-sm text-gray-600">{items}</p>

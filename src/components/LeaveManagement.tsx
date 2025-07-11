@@ -36,8 +36,14 @@ const LeaveManagement = () => {
       const { error } = await supabase
         .from('leave_requests')
         .insert([{
-          ...formData,
-          status: 'pending'
+          student_name: formData.student_name,
+          student_email: formData.student_email,
+          student_room: formData.student_room,
+          from_date: formData.from_date,
+          to_date: formData.to_date,
+          reason: formData.reason,
+          parent_email: formData.student_email, // Using student email as parent email placeholder
+          status: 'pending_warden' as const
         }]);
 
       if (error) throw error;

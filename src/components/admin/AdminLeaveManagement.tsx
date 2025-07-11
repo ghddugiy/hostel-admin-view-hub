@@ -16,7 +16,7 @@ interface LeaveRequest {
   from_date: string;
   to_date: string;
   reason: string;
-  status: string;
+  status: 'pending_parent' | 'pending_warden' | 'approved' | 'rejected';
   created_at: string;
   approved_by: string | null;
 }
@@ -116,14 +116,15 @@ const AdminLeaveManagement = () => {
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      pending: 'bg-yellow-100 text-yellow-800',
+      pending_parent: 'bg-yellow-100 text-yellow-800',
+      pending_warden: 'bg-blue-100 text-blue-800',
       approved: 'bg-green-100 text-green-800',
       rejected: 'bg-red-100 text-red-800'
     };
     
     return (
       <Badge className={variants[status as keyof typeof variants] || 'bg-gray-100 text-gray-800'}>
-        {status}
+        {status.replace('_', ' ')}
       </Badge>
     );
   };
@@ -166,7 +167,7 @@ const AdminLeaveManagement = () => {
                   <TableCell>{getStatusBadge(request.status)}</TableCell>
                   <TableCell>{new Date(request.created_at).toLocaleDateString()}</TableCell>
                   <TableCell>
-                    {request.status === 'pending' && (
+                    {(request.status === 'pending_warden' || request.status === 'pending_parent') && (
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -186,7 +187,7 @@ const AdminLeaveManagement = () => {
                         </Button>
                       </div>
                     )}
-                    {request.status !== 'pending' && (
+                    {(request.status === 'approved' || request.status === 'rejected') && (
                       <span className="text-sm text-gray-500">
                         {request.status === 'approved' ? 'Approved' : 'Declined'}
                       </span>

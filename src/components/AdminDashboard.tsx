@@ -40,7 +40,7 @@ const AdminDashboard = () => {
         supabase.from('complaints').select('*', { count: 'exact' }).neq('status', 'resolved'),
         supabase.from('rooms').select('*', { count: 'exact' }).eq('status', 'available'),
         supabase.from('fees').select('*', { count: 'exact' }).eq('status', 'pending'),
-        supabase.from('leave_requests').select('*', { count: 'exact' }).eq('status', 'pending')
+        supabase.from('leave_requests').select('*', { count: 'exact' }).eq('status', 'pending_warden')
       ]);
 
       setStats({

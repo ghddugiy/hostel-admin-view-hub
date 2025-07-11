@@ -16,7 +16,7 @@ interface Room {
   room_number: number;
   capacity: number;
   current_occupancy: number;
-  status: string;
+  status: 'available' | 'occupied' | 'maintenance';
   floor: number | null;
 }
 
@@ -26,7 +26,7 @@ const ManageRooms = () => {
     room_number: '',
     capacity: '2',
     floor: '',
-    status: 'available'
+    status: 'available' as 'available' | 'occupied' | 'maintenance'
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
