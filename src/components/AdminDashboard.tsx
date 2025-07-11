@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, UserCheck, AlertCircle, Bed, DollarSign } from 'lucide-react';
+import { Users, UserCheck, AlertCircle, Bed, DollarSign, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import AdminOverview from './admin/AdminOverview';
@@ -10,6 +10,7 @@ import AdminMembers from './admin/AdminMembers';
 import AdminStudents from './admin/AdminStudents';
 import AdminComplaints from './admin/AdminComplaints';
 import AdminFees from './admin/AdminFees';
+import AdminLeaveManagement from './admin/AdminLeaveManagement';
 import AdminLogin from './admin/AdminLogin';
 
 const AdminDashboard = () => {
@@ -19,7 +20,8 @@ const AdminDashboard = () => {
     totalMembers: 0,
     activeComplaints: 0,
     availableRooms: 0,
-    pendingFees: 0
+    pendingFees: 0,
+    pendingLeaves: 0
   });
   const { toast } = useToast();
 
@@ -32,12 +34,13 @@ const AdminDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const [studentsRes, membersRes, complaintsRes, roomsRes, feesRes] = await Promise.all([
+      const [studentsRes, membersRes, complaintsRes, roomsRes, feesRes, leavesRes] = await Promise.all([
         supabase.from('students').select('*', { count: 'exact' }),
         supabase.from('members').select('*', { count: 'exact' }),
         supabase.from('complaints').select('*', { count: 'exact' }).neq('status', 'resolved'),
         supabase.from('rooms').select('*', { count: 'exact' }).eq('status', 'available'),
-        supabase.from('fees').select('*', { count: 'exact' }).eq('status', 'pending')
+        supabase.from('fees').select('*', { count: 'exact' }).eq('status', 'pending'),
+        supabase.from('leave_requests').select('*', { count: 'exact' }).eq('status', 'pending')
       ]);
 
       setStats({
@@ -45,7 +48,8 @@ const AdminDashboard = () => {
         totalMembers: membersRes.count || 0,
         activeComplaints: complaintsRes.count || 0,
         availableRooms: roomsRes.count || 0,
-        pendingFees: feesRes.count || 0
+        pendingFees: feesRes.count || 0,
+        pendingLeaves: leavesRes.count || 0
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -65,6 +69,7 @@ const AdminDashboard = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'complaints' }, () => fetchStats())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, () => fetchStats())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'fees' }, () => fetchStats())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leave_requests' }, () => fetchStats())
       .subscribe();
 
     return () => {
@@ -98,7 +103,7 @@ const AdminDashboard = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
             <Card className="bg-white/95">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Students</CardTitle>
@@ -148,15 +153,26 @@ const AdminDashboard = () => {
                 <div className="text-2xl font-bold">{stats.pendingFees}</div>
               </CardContent>
             </Card>
+
+            <Card className="bg-white/95">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Pending Leaves</CardTitle>
+                <Calendar className="h-4 w-4 text-orange-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.pendingLeaves}</div>
+              </CardContent>
+            </Card>
           </div>
 
           <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-5 bg-white/90">
+            <TabsList className="grid w-full grid-cols-6 bg-white/90">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="members">Members</TabsTrigger>
               <TabsTrigger value="students">Students</TabsTrigger>
               <TabsTrigger value="complaints">Complaints</TabsTrigger>
               <TabsTrigger value="fees">Fees</TabsTrigger>
+              <TabsTrigger value="leaves">Leave Requests</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview">
@@ -177,6 +193,10 @@ const AdminDashboard = () => {
 
             <TabsContent value="fees">
               <AdminFees />
+            </TabsContent>
+
+            <TabsContent value="leaves">
+              <AdminLeaveManagement />
             </TabsContent>
           </Tabs>
         </div>

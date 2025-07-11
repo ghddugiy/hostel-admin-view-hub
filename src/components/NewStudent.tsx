@@ -4,27 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { UserPlus } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const NewStudent = () => {
-  const { toast } = useToast();
   const [formData, setFormData] = useState({
-    mobileNumber: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-    permanentAddress: '',
-    aadhaarNumber: '',
-    roomNumber: '',
+    name: '',
     course: '',
-    year: ''
+    year: '',
+    room_number: '',
+    email: '',
+    phone: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -37,12 +33,9 @@ const NewStudent = () => {
 
     try {
       const studentData = {
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
-        phone: formData.mobileNumber,
-        room_number: formData.roomNumber ? parseInt(formData.roomNumber) : null,
-        course: formData.course || 'Not Specified',
-        year: formData.year ? parseInt(formData.year) : 1
+        ...formData,
+        year: parseInt(formData.year),
+        room_number: formData.room_number ? parseInt(formData.room_number) : null
       };
 
       const { error } = await supabase
@@ -52,27 +45,23 @@ const NewStudent = () => {
       if (error) throw error;
 
       toast({
-        title: "Student Added Successfully",
-        description: `${formData.firstName} ${formData.lastName} has been registered.`,
+        title: "Success",
+        description: "Student added successfully"
       });
-      
-      // Reset form
+
       setFormData({
-        mobileNumber: '',
-        firstName: '',
-        lastName: '',
-        email: '',
-        permanentAddress: '',
-        aadhaarNumber: '',
-        roomNumber: '',
+        name: '',
         course: '',
-        year: ''
+        year: '',
+        room_number: '',
+        email: '',
+        phone: ''
       });
     } catch (error) {
       console.error('Error adding student:', error);
       toast({
         title: "Error",
-        description: "Failed to add student. Please try again.",
+        description: "Failed to add student",
         variant: "destructive"
       });
     } finally {
@@ -98,54 +87,18 @@ const NewStudent = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="mobileNumber">Mobile Number</Label>
+                    <Label htmlFor="name">Name</Label>
                     <Input
-                      id="mobileNumber"
-                      name="mobileNumber"
-                      type="tel"
-                      value={formData.mobileNumber}
+                      id="name"
+                      name="name"
+                      value={formData.name}
                       onChange={handleInputChange}
                       required
                     />
                   </div>
-
-                  <div>
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input
-                      id="firstName"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
                   <div>
                     <Label htmlFor="course">Course</Label>
                     <Input
@@ -153,67 +106,52 @@ const NewStudent = () => {
                       name="course"
                       value={formData.course}
                       onChange={handleInputChange}
-                      placeholder="e.g., Computer Science"
                       required
                     />
                   </div>
-
                   <div>
                     <Label htmlFor="year">Year</Label>
                     <Input
                       id="year"
                       name="year"
                       type="number"
-                      min="1"
-                      max="5"
                       value={formData.year}
                       onChange={handleInputChange}
-                      placeholder="1-5"
                       required
                     />
                   </div>
-
                   <div>
-                    <Label htmlFor="aadhaarNumber">Aadhaar Number</Label>
+                    <Label htmlFor="room_number">Room Number</Label>
                     <Input
-                      id="aadhaarNumber"
-                      name="aadhaarNumber"
-                      value={formData.aadhaarNumber}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="roomNumber">Room Number</Label>
-                    <Input
-                      id="roomNumber"
-                      name="roomNumber"
+                      id="room_number"
+                      name="room_number"
                       type="number"
-                      value={formData.roomNumber}
+                      value={formData.room_number}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
                       onChange={handleInputChange}
                     />
                   </div>
                 </div>
-
-                <div>
-                  <Label htmlFor="permanentAddress">Permanent Address</Label>
-                  <Textarea
-                    id="permanentAddress"
-                    name="permanentAddress"
-                    value={formData.permanentAddress}
-                    onChange={handleInputChange}
-                    rows={3}
-                    required
-                  />
-                </div>
-
-                <Button 
-                  type="submit" 
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Submitting...' : 'Submit Registration'}
+                <Button type="submit" disabled={isSubmitting} className="w-full">
+                  {isSubmitting ? 'Adding Student...' : 'Add Student'}
                 </Button>
               </form>
             </CardContent>

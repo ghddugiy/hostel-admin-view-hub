@@ -1,26 +1,56 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UtensilsCrossed, Calendar, Receipt } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Utensils, Clock, Users } from 'lucide-react';
 
 const MessManagement = () => {
-  const weekMenu = [
-    { day: 'Monday', breakfast: 'Poha, Tea', lunch: 'Dal Rice, Sabzi', dinner: 'Chapati, Dal, Rice' },
-    { day: 'Tuesday', breakfast: 'Upma, Coffee', lunch: 'Rajma Rice, Salad', dinner: 'Roti, Sab ziDal' },
-    { day: 'Wednesday', breakfast: 'Paratha, Tea', lunch: 'Chole Rice, Pickle', dinner: 'Chapati, Paneer, Rice' },
-    { day: 'Thursday', breakfast: 'Idli, Sambar', lunch: 'Dal Rice, Aloo Sabzi', dinner: 'Roti, Dal, Rice' },
-    { day: 'Friday', breakfast: 'Sandwich, Tea', lunch: 'Biryani, Raita', dinner: 'Chapati, Mixed Dal' },
-    { day: 'Saturday', breakfast: 'Dosa, Chutney', lunch: 'Pulao, Curry', dinner: 'Roti, Sabzi, Rice' },
-    { day: 'Sunday', breakfast: 'Puri Sabzi, Tea', lunch: 'Special Thali', dinner: 'Chapati, Dal, Sweet' },
-  ];
+  const [selectedMeal, setSelectedMeal] = useState<string | null>(null);
 
-  const bills = [
-    { month: 'January 2024', amount: '₹3,500', status: 'Paid' },
-    { month: 'February 2024', amount: '₹3,200', status: 'Paid' },
-    { month: 'March 2024', amount: '₹3,800', status: 'Pending' },
-    { month: 'April 2024', amount: '₹3,600', status: 'Due' },
-  ];
+  const menuSchedule = {
+    Monday: {
+      breakfast: 'Idli, Sambar, Chutney',
+      lunch: 'Rice, Dal, Vegetable Curry, Chapati',
+      dinner: 'Fried Rice, Manchurian, Soup'
+    },
+    Tuesday: {
+      breakfast: 'Poha, Tea/Coffee',
+      lunch: 'Rice, Rasam, Dry Vegetable, Chapati',
+      dinner: 'Chapati, Paneer Curry, Rice'
+    },
+    Wednesday: {
+      breakfast: 'Upma, Coconut Chutney',
+      lunch: 'Rice, Sambar, Vegetable Fry, Chapati',
+      dinner: 'Biryani, Raita, Pickle'
+    },
+    Thursday: {
+      breakfast: 'Dosa, Sambar, Chutney',
+      lunch: 'Rice, Dal, Mixed Vegetable, Chapati',
+      dinner: 'Chapati, Dal Fry, Rice'
+    },
+    Friday: {
+      breakfast: 'Bread, Jam, Tea/Coffee',
+      lunch: 'Rice, Fish Curry, Vegetable, Chapati',
+      dinner: 'Fried Rice, Gobi Manchurian'
+    },
+    Saturday: {
+      breakfast: 'Paratha, Curd, Pickle',
+      lunch: 'Rice, Chicken Curry, Vegetable, Chapati',
+      dinner: 'Noodles, Chili Chicken'
+    },
+    Sunday: {
+      breakfast: 'Puri, Aloo Sabzi',
+      lunch: 'Special Rice, Mutton Curry, Vegetable',
+      dinner: 'Chapati, Paneer Masala, Rice'
+    }
+  };
+
+  const messTimings = {
+    breakfast: '7:30 AM - 9:30 AM',
+    lunch: '12:00 PM - 2:00 PM',
+    dinner: '7:00 PM - 9:00 PM'
+  };
 
   return (
     <div 
@@ -30,105 +60,85 @@ const MessManagement = () => {
       <div className="absolute inset-0 bg-white/10"></div>
       <div className="relative z-10 p-6">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold text-foreground mb-8">Mess & Food Management</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-8">Mess Management</h1>
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {/* Weekly Menu */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <Card className="bg-white/95">
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <Calendar className="mr-2" />
-                  Weekly Mess Menu
+                  <Clock className="mr-2" />
+                  Mess Timings
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Day</TableHead>
-                      <TableHead>Breakfast</TableHead>
-                      <TableHead>Lunch</TableHead>
-                      <TableHead>Dinner</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {weekMenu.map((day) => (
-                      <TableRow key={day.day}>
-                        <TableCell className="font-medium">{day.day}</TableCell>
-                        <TableCell>{day.breakfast}</TableCell>
-                        <TableCell>{day.lunch}</TableCell>
-                        <TableCell>{day.dinner}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              <CardContent className="space-y-3">
+                {Object.entries(messTimings).map(([meal, time]) => (
+                  <div key={meal} className="flex justify-between items-center">
+                    <span className="font-medium capitalize">{meal}:</span>
+                    <Badge variant="outline">{time}</Badge>
+                  </div>
+                ))}
               </CardContent>
             </Card>
 
-            {/* Bills */}
             <Card className="bg-white/95">
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <Receipt className="mr-2" />
-                  Mess Bills
+                  <Users className="mr-2" />
+                  Today's Menu
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Month</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {bills.map((bill) => (
-                      <TableRow key={bill.month}>
-                        <TableCell className="font-medium">{bill.month}</TableCell>
-                        <TableCell>{bill.amount}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            bill.status === 'Paid' ? 'bg-green-100 text-green-800' :
-                            bill.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
-                            {bill.status}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              <CardContent className="space-y-3">
+                {Object.entries(menuSchedule[Object.keys(menuSchedule)[new Date().getDay() - 1] || 'Monday']).map(([meal, items]) => (
+                  <div key={meal}>
+                    <h4 className="font-medium capitalize mb-1">{meal}</h4>
+                    <p className="text-sm text-gray-600">{items}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/95">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Utensils className="mr-2" />
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button className="w-full" variant="outline">
+                  View Full Menu
+                </Button>
+                <Button className="w-full" variant="outline">
+                  Report Issue
+                </Button>
+                <Button className="w-full" variant="outline">
+                  Special Requests
+                </Button>
               </CardContent>
             </Card>
           </div>
 
-          {/* Today's Special */}
-          <Card className="mt-6 bg-white/95">
+          <Card className="bg-white/95">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <UtensilsCrossed className="mr-2" />
-                Today's Special Menu
-              </CardTitle>
+              <CardTitle>Weekly Menu Schedule</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold mb-2">Breakfast</h3>
-                  <p className="text-muted-foreground">Aloo Paratha with Curd</p>
-                  <p className="text-muted-foreground">Tea/Coffee</p>
-                </div>
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold mb-2">Lunch</h3>
-                  <p className="text-muted-foreground">Chicken Biryani</p>
-                  <p className="text-muted-foreground">Raita & Pickle</p>
-                </div>
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold mb-2">Dinner</h3>
-                  <p className="text-muted-foreground">Dal Makhani with Rice</p>
-                  <p className="text-muted-foreground">Mixed Vegetable Curry</p>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {Object.entries(menuSchedule).map(([day, meals]) => (
+                  <Card key={day} className="border">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg">{day}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {Object.entries(meals).map(([meal, items]) => (
+                        <div key={meal}>
+                          <h5 className="font-medium capitalize text-sm">{meal}</h5>
+                          <p className="text-xs text-gray-600">{items}</p>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </CardContent>
           </Card>

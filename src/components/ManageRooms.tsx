@@ -1,48 +1,182 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Search, Plus, Edit, Trash2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Bed, Plus, Edit, Trash2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+interface Room {
+  id: string;
+  room_number: number;
+  capacity: number;
+  current_occupancy: number;
+  status: string;
+  floor: number | null;
+}
 
 const ManageRooms = () => {
-  const [rooms, setRooms] = useState([
-    { id: 1, number: '101', isActive: true, capacity: 2, occupied: 1 },
-    { id: 2, number: '102', isActive: true, capacity: 3, occupied: 3 },
-    { id: 3, number: '103', isActive: false, capacity: 2, occupied: 0 },
-    { id: 4, number: '201', isActive: true, capacity: 4, occupied: 2 },
-  ]);
-  
-  const [searchTerm, setSearchTerm] = useState('');
-  const [newRoomNumber, setNewRoomNumber] = useState('');
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [formData, setFormData] = useState({
+    room_number: '',
+    capacity: '2',
+    floor: '',
+    status: 'available'
+  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
-  const filteredRooms = rooms.filter(room => 
-    room.number.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    fetchRooms();
+  }, []);
 
-  const addRoom = () => {
-    if (newRoomNumber) {
-      setRooms([...rooms, { 
-        id: Date.now(), 
-        number: newRoomNumber, 
-        isActive: true, 
-        capacity: 2, 
-        occupied: 0 
-      }]);
-      setNewRoomNumber('');
+  const fetchRooms = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('rooms')
+        .select('*')
+        .order('room_number', { ascending: true });
+
+      if (error) throw error;
+      setRooms(data || []);
+    } catch (error) {
+      console.error('Error fetching rooms:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch rooms",
+        variant: "destructive"
+      });
     }
   };
 
-  const toggleRoomStatus = (id: number) => {
-    setRooms(rooms.map(room => 
-      room.id === id ? { ...room, isActive: !room.isActive } : room
-    ));
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const deleteRoom = (id: number) => {
-    setRooms(rooms.filter(room => room.id !== id));
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const roomData = {
+        room_number: parseInt(formData.room_number),
+        capacity: parseInt(formData.capacity),
+        floor: formData.floor ? parseInt(formData.floor) : null,
+        status: formData.status,
+        current_occupancy: 0
+      };
+
+      if (editingId) {
+        const { error } = await supabase
+          .from('rooms')
+          .update(roomData)
+          .eq('id', editingId);
+
+        if (error) throw error;
+        
+        toast({
+          title: "Success",
+          description: "Room updated successfully"
+        });
+        setEditingId(null);
+      } else {
+        const { error } = await supabase
+          .from('rooms')
+          .insert([roomData]);
+
+        if (error) throw error;
+        
+        toast({
+          title: "Success",
+          description: "Room added successfully"
+        });
+      }
+
+      setFormData({
+        room_number: '',
+        capacity: '2',
+        floor: '',
+        status: 'available'
+      });
+
+      fetchRooms();
+    } catch (error) {
+      console.error('Error saving room:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save room",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEdit = (room: Room) => {
+    setFormData({
+      room_number: room.room_number.toString(),
+      capacity: room.capacity.toString(),
+      floor: room.floor?.toString() || '',
+      status: room.status
+    });
+    setEditingId(room.id);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this room?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('rooms')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Room deleted successfully"
+      });
+
+      fetchRooms();
+    } catch (error) {
+      console.error('Error deleting room:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete room",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const variants = {
+      available: 'bg-green-100 text-green-800',
+      occupied: 'bg-blue-100 text-blue-800',
+      maintenance: 'bg-red-100 text-red-800'
+    };
+    
+    return (
+      <Badge className={variants[status as keyof typeof variants] || 'bg-gray-100 text-gray-800'}>
+        {status}
+      </Badge>
+    );
   };
 
   return (
@@ -55,79 +189,149 @@ const ManageRooms = () => {
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl font-bold text-foreground mb-8">Manage Rooms</h1>
 
-          {/* Add New Room */}
-          <Card className="mb-6 bg-white/95">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Plus className="mr-2" />
-                Add New Room
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-4">
-                <Input
-                  placeholder="Room Number"
-                  value={newRoomNumber}
-                  onChange={(e) => setNewRoomNumber(e.target.value)}
-                />
-                <Button onClick={addRoom} className="bg-blue-600 hover:bg-blue-700">
-                  Add Room
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Search */}
-          <Card className="mb-6 bg-white/95">
-            <CardContent className="pt-6">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Search by room number..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Rooms List */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredRooms.map((room) => (
-              <Card key={room.id} className="bg-white/95">
-                <CardHeader>
-                  <CardTitle className="flex justify-between items-center">
-                    Room {room.number}
-                    <Switch
-                      checked={room.isActive}
-                      onCheckedChange={() => toggleRoomStatus(room.id)}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="bg-white/95">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Plus className="mr-2 h-5 w-5" />
+                  {editingId ? 'Edit Room' : 'Add New Room'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="room_number">Room Number</Label>
+                    <Input
+                      id="room_number"
+                      name="room_number"
+                      type="number"
+                      value={formData.room_number}
+                      onChange={handleInputChange}
+                      required
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="capacity">Capacity</Label>
+                    <Select 
+                      value={formData.capacity} 
+                      onValueChange={(value) => handleSelectChange('capacity', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select capacity" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 Person</SelectItem>
+                        <SelectItem value="2">2 Persons</SelectItem>
+                        <SelectItem value="3">3 Persons</SelectItem>
+                        <SelectItem value="4">4 Persons</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="floor">Floor</Label>
+                    <Input
+                      id="floor"
+                      name="floor"
+                      type="number"
+                      value={formData.floor}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="status">Status</Label>
+                    <Select 
+                      value={formData.status} 
+                      onValueChange={(value) => handleSelectChange('status', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="available">Available</SelectItem>
+                        <SelectItem value="occupied">Occupied</SelectItem>
+                        <SelectItem value="maintenance">Maintenance</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="submit" disabled={isSubmitting}>
+                      {isSubmitting ? 'Saving...' : (editingId ? 'Update Room' : 'Add Room')}
+                    </Button>
+                    {editingId && (
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => {
+                          setEditingId(null);
+                          setFormData({
+                            room_number: '',
+                            capacity: '2',
+                            floor: '',
+                            status: 'available'
+                          });
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+
+            <div className="lg:col-span-2">
+              <Card className="bg-white/95">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Bed className="mr-2 h-5 w-5" />
+                    Rooms List
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 text-muted-foreground">
-                    <p>Capacity: {room.capacity}</p>
-                    <p>Occupied: {room.occupied}</p>
-                    <p>Status: {room.isActive ? 'Active' : 'Inactive'}</p>
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    <Button size="sm" variant="outline">
-                      <Edit className="h-4 w-4 mr-1" />
-                      Update
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="destructive"
-                      onClick={() => deleteRoom(room.id)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
-                    </Button>
-                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Room No.</TableHead>
+                        <TableHead>Floor</TableHead>
+                        <TableHead>Capacity</TableHead>
+                        <TableHead>Occupancy</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {rooms.map((room) => (
+                        <TableRow key={room.id}>
+                          <TableCell className="font-medium">{room.room_number}</TableCell>
+                          <TableCell>{room.floor || 'N/A'}</TableCell>
+                          <TableCell>{room.capacity}</TableCell>
+                          <TableCell>{room.current_occupancy}/{room.capacity}</TableCell>
+                          <TableCell>{getStatusBadge(room.status)}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEdit(room)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDelete(room.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </CardContent>
               </Card>
-            ))}
+            </div>
           </div>
         </div>
       </div>

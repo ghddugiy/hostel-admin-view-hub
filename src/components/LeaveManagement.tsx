@@ -6,18 +6,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 const LeaveManagement = () => {
-  const { toast } = useToast();
   const [formData, setFormData] = useState({
-    mobileNumber: '',
-    name: '',
-    email: '',
-    roomNumber: '',
-    leaveDate: '',
+    student_name: '',
+    student_email: '',
+    student_room: '',
+    from_date: '',
+    to_date: '',
     reason: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -26,22 +28,43 @@ const LeaveManagement = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Leave Request Submitted",
-      description: `Leave request for ${formData.name} has been recorded.`,
-    });
-    
-    // Reset form
-    setFormData({
-      mobileNumber: '',
-      name: '',
-      email: '',
-      roomNumber: '',
-      leaveDate: '',
-      reason: ''
-    });
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase
+        .from('leave_requests')
+        .insert([{
+          ...formData,
+          status: 'pending'
+        }]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Leave request submitted successfully"
+      });
+
+      setFormData({
+        student_name: '',
+        student_email: '',
+        student_room: '',
+        from_date: '',
+        to_date: '',
+        reason: ''
+      });
+    } catch (error) {
+      console.error('Error submitting leave request:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit leave request",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -58,85 +81,79 @@ const LeaveManagement = () => {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Calendar className="mr-2" />
-                Leave Request
+                Leave Application
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="student_name">Student Name</Label>
+                  <Input
+                    id="student_name"
+                    name="student_name"
+                    value={formData.student_name}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="student_email">Student Email</Label>
+                  <Input
+                    id="student_email"
+                    name="student_email"
+                    type="email"
+                    value={formData.student_email}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="student_room">Room Number</Label>
+                  <Input
+                    id="student_room"
+                    name="student_room"
+                    value={formData.student_room}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="mobileNumber">Mobile Number</Label>
+                    <Label htmlFor="from_date">From Date</Label>
                     <Input
-                      id="mobileNumber"
-                      name="mobileNumber"
-                      type="tel"
-                      value={formData.mobileNumber}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="roomNumber">Room Number</Label>
-                    <Input
-                      id="roomNumber"
-                      name="roomNumber"
-                      value={formData.roomNumber}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <Label htmlFor="leaveDate">Leave Date</Label>
-                    <Input
-                      id="leaveDate"
-                      name="leaveDate"
+                      id="from_date"
+                      name="from_date"
                       type="date"
-                      value={formData.leaveDate}
+                      value={formData.from_date}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="to_date">To Date</Label>
+                    <Input
+                      id="to_date"
+                      name="to_date"
+                      type="date"
+                      value={formData.to_date}
                       onChange={handleInputChange}
                       required
                     />
                   </div>
                 </div>
-
                 <div>
-                  <Label htmlFor="reason">Reason for Leave</Label>
+                  <Label htmlFor="reason">Reason</Label>
                   <Textarea
                     id="reason"
                     name="reason"
                     value={formData.reason}
                     onChange={handleInputChange}
-                    rows={4}
                     required
+                    rows={4}
                   />
                 </div>
-
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-                  Submit Leave Request
+                <Button type="submit" disabled={isSubmitting} className="w-full">
+                  {isSubmitting ? 'Submitting...' : 'Submit Leave Request'}
                 </Button>
               </form>
             </CardContent>
