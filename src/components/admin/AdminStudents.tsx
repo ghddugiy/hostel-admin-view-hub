@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -63,10 +62,31 @@ const AdminStudents = () => {
     e.preventDefault();
     
     try {
+      // Check for duplicate email when adding new student or updating with different email
+      if (formData.email) {
+        const { data: existingStudent } = await supabase
+          .from('students')
+          .select('id')
+          .eq('email', formData.email)
+          .single();
+
+        if (existingStudent && (!editingId || existingStudent.id !== editingId)) {
+          toast({
+            title: "Error",
+            description: "A student with this email already exists",
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+
       const studentData = {
-        ...formData,
+        name: formData.name,
+        course: formData.course,
         room_number: formData.room_number ? parseInt(formData.room_number) : null,
-        year: parseInt(formData.year)
+        year: parseInt(formData.year),
+        email: formData.email || null,
+        phone: formData.phone || null
       };
 
       if (editingId) {
@@ -75,7 +95,23 @@ const AdminStudents = () => {
           .update(studentData)
           .eq('id', editingId);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          if (error.code === '23505') {
+            toast({
+              title: "Error",
+              description: "A student with this email already exists",
+              variant: "destructive"
+            });
+          } else {
+            toast({
+              title: "Error",
+              description: "Failed to update student",
+              variant: "destructive"
+            });
+          }
+          return;
+        }
         
         toast({
           title: "Success",
@@ -87,7 +123,23 @@ const AdminStudents = () => {
           .from('students')
           .insert([studentData]);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', error);
+          if (error.code === '23505') {
+            toast({
+              title: "Error",
+              description: "A student with this email already exists",
+              variant: "destructive"
+            });
+          } else {
+            toast({
+              title: "Error",
+              description: "Failed to add student",
+              variant: "destructive"
+            });
+          }
+          return;
+        }
         
         toast({
           title: "Success",
@@ -161,7 +213,7 @@ const AdminStudents = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">Name *</Label>
                 <Input
                   id="name"
                   value={formData.name}
@@ -170,7 +222,7 @@ const AdminStudents = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="course">Course</Label>
+                <Label htmlFor="course">Course *</Label>
                 <Input
                   id="course"
                   value={formData.course}
@@ -188,10 +240,12 @@ const AdminStudents = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="year">Year</Label>
+                <Label htmlFor="year">Year *</Label>
                 <Input
                   id="year"
                   type="number"
+                  min="1"
+                  max="5"
                   value={formData.year}
                   onChange={(e) => setFormData({...formData, year: e.target.value})}
                   required
@@ -204,14 +258,17 @@ const AdminStudents = () => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  placeholder="student@example.com"
                 />
               </div>
               <div>
                 <Label htmlFor="phone">Phone</Label>
                 <Input
                   id="phone"
+                  type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  placeholder="1234567890"
                 />
               </div>
             </div>

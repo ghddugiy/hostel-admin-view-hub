@@ -32,17 +32,57 @@ const NewStudent = () => {
     setIsSubmitting(true);
 
     try {
+      // Check if email already exists
+      if (formData.email) {
+        const { data: existingStudent } = await supabase
+          .from('students')
+          .select('id')
+          .eq('email', formData.email)
+          .single();
+
+        if (existingStudent) {
+          toast({
+            title: "Error",
+            description: "A student with this email already exists",
+            variant: "destructive"
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const studentData = {
-        ...formData,
+        name: formData.name,
+        course: formData.course,
         year: parseInt(formData.year),
-        room_number: formData.room_number ? parseInt(formData.room_number) : null
+        room_number: formData.room_number ? parseInt(formData.room_number) : null,
+        email: formData.email || null,
+        phone: formData.phone || null
       };
 
       const { error } = await supabase
         .from('students')
         .insert([studentData]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        
+        // Handle specific database errors
+        if (error.code === '23505') { // Unique constraint violation
+          toast({
+            title: "Error",
+            description: "A student with this email already exists",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to add student. Please try again.",
+            variant: "destructive"
+          });
+        }
+        return;
+      }
 
       toast({
         title: "Success",
@@ -61,7 +101,7 @@ const NewStudent = () => {
       console.error('Error adding student:', error);
       toast({
         title: "Error",
-        description: "Failed to add student",
+        description: "Failed to add student. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -90,7 +130,7 @@ const NewStudent = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="name">Name</Label>
+                    <Label htmlFor="name">Name *</Label>
                     <Input
                       id="name"
                       name="name"
@@ -100,7 +140,7 @@ const NewStudent = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="course">Course</Label>
+                    <Label htmlFor="course">Course *</Label>
                     <Input
                       id="course"
                       name="course"
@@ -110,11 +150,13 @@ const NewStudent = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="year">Year</Label>
+                    <Label htmlFor="year">Year *</Label>
                     <Input
                       id="year"
                       name="year"
                       type="number"
+                      min="1"
+                      max="5"
                       value={formData.year}
                       onChange={handleInputChange}
                       required
@@ -138,6 +180,7 @@ const NewStudent = () => {
                       type="email"
                       value={formData.email}
                       onChange={handleInputChange}
+                      placeholder="student@example.com"
                     />
                   </div>
                   <div>
@@ -145,8 +188,10 @@ const NewStudent = () => {
                     <Input
                       id="phone"
                       name="phone"
+                      type="tel"
                       value={formData.phone}
                       onChange={handleInputChange}
+                      placeholder="1234567890"
                     />
                   </div>
                 </div>
