@@ -41,7 +41,7 @@ const AdminOverview = ({ stats }: AdminOverviewProps) => {
         ...(complaints || []).map(complaint => ({
           type: 'complaint',
           title: `New complaint: ${complaint.title}`,
-          description: `From ${complaint.students?.name}`,
+          description: `Priority: ${complaint.priority}`,
           time: new Date(complaint.created_at).toLocaleDateString()
         })),
         ...(students || []).map(student => ({

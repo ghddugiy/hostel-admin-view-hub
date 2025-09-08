@@ -16,9 +16,10 @@ interface LeaveRequest {
   from_date: string;
   to_date: string;
   reason: string;
-  status: 'pending_parent' | 'pending_warden' | 'approved' | 'rejected';
+  parent_email: string;
+  status: 'pending_warden' | 'approved_warden' | 'rejected_warden' | 'pending_parent' | 'approved_parent' | 'rejected_parent';
   created_at: string;
-  approved_by: string | null;
+  updated_at: string;
 }
 
 const AdminLeaveManagement = () => {
@@ -67,8 +68,7 @@ const AdminLeaveManagement = () => {
       const { error } = await supabase
         .from('leave_requests')
         .update({ 
-          status: 'approved',
-          approved_by: 'Admin'
+          status: 'approved_warden'
         })
         .eq('id', id);
 
@@ -93,8 +93,7 @@ const AdminLeaveManagement = () => {
       const { error } = await supabase
         .from('leave_requests')
         .update({ 
-          status: 'rejected',
-          approved_by: 'Admin'
+          status: 'rejected_warden'
         })
         .eq('id', id);
 
@@ -118,8 +117,10 @@ const AdminLeaveManagement = () => {
     const variants = {
       pending_parent: 'bg-yellow-100 text-yellow-800',
       pending_warden: 'bg-blue-100 text-blue-800',
-      approved: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800'
+      approved_warden: 'bg-green-100 text-green-800',
+      approved_parent: 'bg-green-100 text-green-800',
+      rejected_warden: 'bg-red-100 text-red-800',
+      rejected_parent: 'bg-red-100 text-red-800'
     };
     
     return (
@@ -187,9 +188,9 @@ const AdminLeaveManagement = () => {
                         </Button>
                       </div>
                     )}
-                    {(request.status === 'approved' || request.status === 'rejected') && (
+                    {(request.status.includes('approved') || request.status.includes('rejected')) && (
                       <span className="text-sm text-gray-500">
-                        {request.status === 'approved' ? 'Approved' : 'Declined'}
+                        {request.status.includes('approved') ? 'Approved' : 'Declined'}
                       </span>
                     )}
                   </TableCell>

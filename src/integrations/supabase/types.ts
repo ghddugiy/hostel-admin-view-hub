@@ -48,46 +48,66 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          due_date: string | null
           fee_type: Database["public"]["Enums"]["fee_type"]
           id: string
           mobile_number: string
           month: string
+          paid_date: string | null
           payment_id: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
           room_number: string | null
+          status: string | null
           student_email: string
+          student_id: string | null
           student_name: string
           updated_at: string
         }
         Insert: {
           amount: number
           created_at?: string
+          due_date?: string | null
           fee_type: Database["public"]["Enums"]["fee_type"]
           id?: string
           mobile_number: string
           month: string
+          paid_date?: string | null
           payment_id?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           room_number?: string | null
+          status?: string | null
           student_email: string
+          student_id?: string | null
           student_name: string
           updated_at?: string
         }
         Update: {
           amount?: number
           created_at?: string
+          due_date?: string | null
           fee_type?: Database["public"]["Enums"]["fee_type"]
           id?: string
           mobile_number?: string
           month?: string
+          paid_date?: string | null
           payment_id?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           room_number?: string | null
+          status?: string | null
           student_email?: string
+          student_id?: string | null
           student_name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fees_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       leave_requests: {
         Row: {

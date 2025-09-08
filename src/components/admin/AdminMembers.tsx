@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Member, MemberFormData } from './types';
+import { Member, MemberFormData, MemberRole } from './types';
 import MemberForm from './MemberForm';
 import MembersList from './MembersList';
 
@@ -29,7 +29,10 @@ const AdminMembers = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setMembers(data || []);
+      setMembers((data || []).map(member => ({
+        ...member,
+        role: member.role as MemberRole
+      })));
     } catch (error) {
       console.error('Error fetching members:', error);
       toast({

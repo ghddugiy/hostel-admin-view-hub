@@ -55,7 +55,7 @@ const NewStudent = () => {
         name: formData.name,
         course: formData.course,
         year: parseInt(formData.year),
-        room_number: formData.room_number ? parseInt(formData.room_number) : null,
+        room_number: formData.room_number || null,
         email: formData.email || null,
         phone: formData.phone || null
       };
@@ -167,9 +167,9 @@ const NewStudent = () => {
                     <Input
                       id="room_number"
                       name="room_number"
-                      type="number"
                       value={formData.room_number}
                       onChange={handleInputChange}
+                      placeholder="101"
                     />
                   </div>
                   <div>

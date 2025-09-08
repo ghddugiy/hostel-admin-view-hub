@@ -131,7 +131,7 @@ const PaymentHandler: React.FC<PaymentHandlerProps> = ({
             name: formData.name,
             email: formData.email,
             phone: formData.mobileNumber,
-            room_number: formData.roomNumber ? parseInt(formData.roomNumber) : null,
+            room_number: formData.roomNumber,
             course: 'Not Specified',
             year: 1
           }])
@@ -146,15 +146,21 @@ const PaymentHandler: React.FC<PaymentHandlerProps> = ({
         throw new Error('Student not found. Please provide student name to create a new record.');
       }
 
-      const dueDate = new Date(formData.month + '-01');
+      // Create fee record
       const { error: feeError } = await supabase
         .from('fees')
         .insert([{
           student_id: studentId,
+          student_name: formData.name,
+          student_email: formData.email,
+          mobile_number: formData.mobileNumber,
+          room_number: formData.roomNumber,
           amount: parseFloat(formData.amount),
-          fee_type: formData.feeType,
-          due_date: dueDate.toISOString().split('T')[0],
+          fee_type: 'hostel_fee' as const,
+          month: formData.month,
+          due_date: `${formData.month}-01`,
           status: 'paid',
+          payment_status: 'paid',
           paid_date: new Date().toISOString().split('T')[0]
         }]);
 

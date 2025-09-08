@@ -41,7 +41,9 @@ const ComplaintManagement = () => {
       const { error } = await supabase
         .from('complaints')
         .insert([{
-          ...formData,
+          title: formData.title,
+          description: formData.description,
+          priority: formData.priority as 'low' | 'medium' | 'high' | 'urgent',
           status: 'pending'
         }]);
 
@@ -119,6 +121,7 @@ const ComplaintManagement = () => {
                       <SelectItem value="low">Low</SelectItem>
                       <SelectItem value="medium">Medium</SelectItem>
                       <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

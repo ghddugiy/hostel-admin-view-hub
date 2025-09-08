@@ -83,7 +83,7 @@ const AdminStudents = () => {
       const studentData = {
         name: formData.name,
         course: formData.course,
-        room_number: formData.room_number ? parseInt(formData.room_number) : null,
+        room_number: formData.room_number || null,
         year: parseInt(formData.year),
         email: formData.email || null,
         phone: formData.phone || null
@@ -234,9 +234,9 @@ const AdminStudents = () => {
                 <Label htmlFor="room_number">Room Number</Label>
                 <Input
                   id="room_number"
-                  type="number"
                   value={formData.room_number}
                   onChange={(e) => setFormData({...formData, room_number: e.target.value})}
+                  placeholder="101"
                 />
               </div>
               <div>

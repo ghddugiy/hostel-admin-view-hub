@@ -89,6 +89,7 @@ export const useFees = () => {
         .from('fees')
         .update({ 
           status: 'paid',
+          payment_status: 'paid',
           paid_date: new Date().toISOString().split('T')[0]
         })
         .eq('id', id);
