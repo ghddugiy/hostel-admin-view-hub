@@ -14,7 +14,246 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      complaints: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          priority: Database["public"]["Enums"]["complaint_priority"]
+          status: Database["public"]["Enums"]["complaint_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          priority?: Database["public"]["Enums"]["complaint_priority"]
+          status?: Database["public"]["Enums"]["complaint_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          priority?: Database["public"]["Enums"]["complaint_priority"]
+          status?: Database["public"]["Enums"]["complaint_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fees: {
+        Row: {
+          amount: number
+          created_at: string
+          fee_type: Database["public"]["Enums"]["fee_type"]
+          id: string
+          mobile_number: string
+          month: string
+          payment_id: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          room_number: string | null
+          student_email: string
+          student_name: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          fee_type: Database["public"]["Enums"]["fee_type"]
+          id?: string
+          mobile_number: string
+          month: string
+          payment_id?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          room_number?: string | null
+          student_email: string
+          student_name: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          fee_type?: Database["public"]["Enums"]["fee_type"]
+          id?: string
+          mobile_number?: string
+          month?: string
+          payment_id?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          room_number?: string | null
+          student_email?: string
+          student_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      leave_requests: {
+        Row: {
+          created_at: string
+          from_date: string
+          id: string
+          parent_email: string
+          reason: string
+          status: Database["public"]["Enums"]["leave_status"]
+          student_email: string
+          student_name: string
+          student_room: string | null
+          to_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          from_date: string
+          id?: string
+          parent_email: string
+          reason: string
+          status?: Database["public"]["Enums"]["leave_status"]
+          student_email: string
+          student_name: string
+          student_room?: string | null
+          to_date: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          from_date?: string
+          id?: string
+          parent_email?: string
+          reason?: string
+          status?: Database["public"]["Enums"]["leave_status"]
+          student_email?: string
+          student_name?: string
+          student_room?: string | null
+          to_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      members: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mess_menus: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          items: string[]
+          meal_type: Database["public"]["Enums"]["meal_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          items: string[]
+          meal_type: Database["public"]["Enums"]["meal_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          items?: string[]
+          meal_type?: Database["public"]["Enums"]["meal_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      rooms: {
+        Row: {
+          capacity: number
+          created_at: string
+          current_occupancy: number
+          floor: number
+          id: string
+          room_number: number
+          status: Database["public"]["Enums"]["room_status"]
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          current_occupancy?: number
+          floor: number
+          id?: string
+          room_number: number
+          status?: Database["public"]["Enums"]["room_status"]
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          current_occupancy?: number
+          floor?: number
+          id?: string
+          room_number?: number
+          status?: Database["public"]["Enums"]["room_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      students: {
+        Row: {
+          course: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          room_number: string | null
+          updated_at: string
+          year: number | null
+        }
+        Insert: {
+          course?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          room_number?: string | null
+          updated_at?: string
+          year?: number | null
+        }
+        Update: {
+          course?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          room_number?: string | null
+          updated_at?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +262,23 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      complaint_priority: "low" | "medium" | "high" | "urgent"
+      complaint_status: "pending" | "in_progress" | "resolved" | "closed"
+      fee_type:
+        | "hostel_fee"
+        | "mess_fee"
+        | "security_deposit"
+        | "maintenance_fee"
+      leave_status:
+        | "pending_warden"
+        | "approved_warden"
+        | "rejected_warden"
+        | "pending_parent"
+        | "approved_parent"
+        | "rejected_parent"
+      meal_type: "breakfast" | "lunch" | "snacks" | "dinner"
+      payment_status: "pending" | "paid" | "overdue" | "cancelled"
+      room_status: "available" | "occupied" | "maintenance"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +405,26 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      complaint_priority: ["low", "medium", "high", "urgent"],
+      complaint_status: ["pending", "in_progress", "resolved", "closed"],
+      fee_type: [
+        "hostel_fee",
+        "mess_fee",
+        "security_deposit",
+        "maintenance_fee",
+      ],
+      leave_status: [
+        "pending_warden",
+        "approved_warden",
+        "rejected_warden",
+        "pending_parent",
+        "approved_parent",
+        "rejected_parent",
+      ],
+      meal_type: ["breakfast", "lunch", "snacks", "dinner"],
+      payment_status: ["pending", "paid", "overdue", "cancelled"],
+      room_status: ["available", "occupied", "maintenance"],
+    },
   },
 } as const
