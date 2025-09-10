@@ -38,13 +38,22 @@ const ComplaintManagement = () => {
     setIsSubmitting(true);
 
     try {
+      // Get the current user's student record
+      const userEmail = 'student@example.com'; // This should come from auth context
+      const { data: student } = await supabase
+        .from('students')
+        .select('id')
+        .eq('email', userEmail)
+        .single();
+
       const { error } = await supabase
         .from('complaints')
         .insert([{
           title: formData.title,
           description: formData.description,
           priority: formData.priority as 'low' | 'medium' | 'high' | 'urgent',
-          status: 'pending'
+          status: 'pending',
+          student_id: student?.id || null
         }]);
 
       if (error) throw error;

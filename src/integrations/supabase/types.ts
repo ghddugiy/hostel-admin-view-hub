@@ -21,6 +21,7 @@ export type Database = {
           id: string
           priority: Database["public"]["Enums"]["complaint_priority"]
           status: Database["public"]["Enums"]["complaint_status"]
+          student_id: string | null
           title: string
           updated_at: string
         }
@@ -30,6 +31,7 @@ export type Database = {
           id?: string
           priority?: Database["public"]["Enums"]["complaint_priority"]
           status?: Database["public"]["Enums"]["complaint_status"]
+          student_id?: string | null
           title: string
           updated_at?: string
         }
@@ -39,10 +41,19 @@ export type Database = {
           id?: string
           priority?: Database["public"]["Enums"]["complaint_priority"]
           status?: Database["public"]["Enums"]["complaint_status"]
+          student_id?: string | null
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "complaints_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fees: {
         Row: {
